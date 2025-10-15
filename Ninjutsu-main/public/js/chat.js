@@ -279,7 +279,7 @@ async fetchUserName() {
     setupEventListeners() {
         // Send button
         document.getElementById('sendButton').addEventListener('click', () => this.sendMessage());
-        
+
         // Message input
         const messageInput = document.getElementById('messageInput');
         messageInput.addEventListener('keydown', (e) => {
@@ -288,39 +288,39 @@ async fetchUserName() {
                 this.sendMessage();
             }
         });
-        
+
         messageInput.addEventListener('input', () => {
             this.sendTyping();
             clearTimeout(this.typingTimeout);
             this.typingTimeout = setTimeout(() => this.stopTyping(), 2000);
         });
-        
+
         // File upload
         document.getElementById('fileButton').addEventListener('click', () => {
             document.getElementById('fileUpload').click();
         });
-        
+
         document.getElementById('fileUpload').addEventListener('change', (e) => {
             this.handleFileUpload(e);
         });
-        
+
         // Voice recording
         document.getElementById('recordButton').addEventListener('click', () => {
             this.toggleRecording();
         });
-        
+
         // Format toolbar toggle
         document.querySelector('.format-trigger').addEventListener('click', (e) => {
             e.stopPropagation();
             this.toggleFormatToolbar();
         });
-        
+
         // chatEmoji picker toggle
         document.querySelector('.chatEmoji-trigger').addEventListener('click', (e) => {
             e.stopPropagation();
             this.togglechatEmojiPicker();
         });
-        
+
         // Close dropdowns when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.chatEmoji-picker') && !e.target.closest('.chatEmoji-trigger')) {
@@ -336,6 +336,23 @@ async fetchUserName() {
                 this.closeLinkInput();
             }
         });
+
+        // Handle window resize for responsive behavior
+        window.addEventListener('resize', () => {
+            this.handleResize();
+        });
+    }
+
+    handleResize() {
+        const container = document.querySelector('.chat-container');
+        if (window.innerWidth > 768) {
+            // Reset mobile view on desktop
+            if (container) {
+                container.classList.remove('chat-selected');
+            }
+        }
+        // Update chat title for mobile back button
+        this.updateChatTitle(this.selectedChat);
     }
 
     setupchatEmojiPicker() {
@@ -1318,7 +1335,7 @@ async fetchUserName() {
 
         this.renderChatHistory(this.selectedChat);
         this.updateChatTitle(this.selectedChat);
-        
+
         if (this.typingUsers[this.selectedChat]) {
             this.typingUsers[this.selectedChat].clear();
         }
@@ -1328,7 +1345,7 @@ async fetchUserName() {
         document.querySelectorAll('#participants li, #groupsList li').forEach(li => {
             li.classList.remove('active');
         });
-        
+
         if (chatId === 'general') {
             document.querySelector('#participants li').classList.add('active');
         } else if (chatId.startsWith('group-')) {
@@ -1343,11 +1360,19 @@ async fetchUserName() {
                 }
             });
         }
+
+        // Mobile responsive: Show chat window, hide list on mobile
+        if (window.innerWidth <= 768) {
+            const container = document.querySelector('.chat-container');
+            if (container) {
+                container.classList.add('chat-selected');
+            }
+        }
     }
 
     updateChatTitle(chatId) {
         const chatTitle = document.getElementById('chat-title');
-        
+
         if (chatId === 'general') {
             chatTitle.innerHTML = '<i class="fas fa-globe"></i> General Chat';
         } else if (chatId.startsWith('group-')) {
@@ -1358,6 +1383,20 @@ async fetchUserName() {
             const recipientId = this.getRecipientFromConversationKey(chatId);
             const recipientName = this.users[recipientId] || 'Private Chat';
             chatTitle.innerHTML = `<i class="fas fa-user"></i> ${recipientName}`;
+        }
+
+        // Add back button click handler for mobile
+        if (window.innerWidth <= 768) {
+            chatTitle.style.cursor = 'pointer';
+            chatTitle.onclick = () => {
+                const container = document.querySelector('.chat-container');
+                if (container) {
+                    container.classList.remove('chat-selected');
+                }
+            };
+        } else {
+            chatTitle.style.cursor = 'default';
+            chatTitle.onclick = null;
         }
     }
 
